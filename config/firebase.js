@@ -103,9 +103,12 @@ const verifyToken = async (request) => {
       uid = request.body.id
     }
     admin.auth().verifyIdToken(token).then((decodedToken) => {
-      const uid = decodedToken.uid;
-      console.log(uid)
-      resolve(10)
+      const uid_firebase = decodedToken.uid;
+      if(uid_firebase===uid){
+        resolve(10)
+      }else{
+        throw new Error('Requete refusée')
+      }
     }).catch((error) => {
       reject(new Error('Requete refusée'))
     });

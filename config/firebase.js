@@ -1,9 +1,9 @@
-/*
+
 //======================================================================================================
 //                                      Méthode d'authentification 1
 //======================================================================================================
-
-// Importer les fonctions de firebase pour l'authentification
+/*
+//Importer les fonctions de firebase pour l'authentification
 const { initializeApp } = require("firebase/app")
 const { getAuth } = require("firebase/auth")
 
@@ -25,9 +25,20 @@ const auth = getAuth(app);
 //Verifier un token d'un utilisateur
 const verifyToken = async (request) => {
   return new Promise((resolve, reject) => {
-    let token = request.body.token
-    auth.verifyIdToken(token).then((decodedToken) => {
-      const uid = decodedToken.uid;
+    let token
+    let uid
+    if(request.method==="GET"){
+      console.log("GET")
+      token=request.headers.token
+      uid=request.headers.id
+    }else{
+      console.log("AUTRES")
+      token=request.body.token
+      uid=request.body.id
+    }
+    getAuth(initializeApp(firebaseConfig)).verifyIdToken(token).then((decodedToken) => {
+      const uid_firebase = decodedToken.uid;
+      console.log("le token decodé est == "+uid_firebase)
       resolve("Succes")
     })
       .catch((error) => {
@@ -47,15 +58,17 @@ module.exports =
   verifyToken
 }
 */
+
 //======================================================================================================
 //                                      Méthode d'authentification 2
 //======================================================================================================
 
 // Importer les fonctions de firebase pour l'authentification
 const { initializeApp } = require("firebase/app")
-const { getAuth, signInWithCustomToken, signOut } = require("firebase/auth")
+const { getAuth} = require("firebase/auth")
 var admin = require("firebase-admin");
 var serviceAccount = require("./autotek-8c725-firebase-adminsdk-7tu4s-24ed0288bc.json");
+const Logger = require("nodemon/lib/utils/log");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
@@ -77,20 +90,26 @@ const auth = getAuth(app);
 
 //Verifier un token d'un utilisateur
 const verifyToken = async (request) => {
-    /*return new Promise((resolve, reject) => {
-      const uid = "VPfc6WUoqnMjXI3Dx59yrEDiAMD3"
-      admin.auth().createCustomToken(uid).then((customToken) => {
-        console.log(customToken)
-        signInWithCustomToken(auth, customToken)
-          .then((userCredential) => {
-            // Signed in
-            resolve(10)
-          }).catch((e) => {
-            reject(new Error('Requete refusée'))
-          })
-      }
-      )
-    })*/
+  return new Promise((resolve, reject) => {
+    let token
+    let uid
+    if (request.method === "GET") {
+      console.log("GET")
+      token = request.headers.token
+      uid = request.headers.id
+    } else {
+      console.log("AUTRES")
+      token = request.body.token
+      uid = request.body.id
+    }
+    admin.auth().verifyIdToken(token).then((decodedToken) => {
+      const uid = decodedToken.uid;
+      console.log(uid)
+      resolve(10)
+    }).catch((error) => {
+      reject(new Error('Requete refusée'))
+    });
+  })
 }
 
 // Exporter la fonction de verification du token
